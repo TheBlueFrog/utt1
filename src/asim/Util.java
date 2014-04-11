@@ -17,6 +17,10 @@ public class Util
 	public static final long OneDayms = (24L * OneHourms);
 	public static final long OneYearms = (365L * OneDayms);
 
+	public static double metersBetween(LatLng a, LatLng b) 
+	{
+		return metersBetween(a.mLat, a.mLon, b.mLat, b.mLon);
+	}
 	static public double metersBetween(double lat1, double lon1, double lat2, double lon2)
 	{
 		//Spherical	law of cosines:	d = acos( sin(??1).sin(??2) + cos(??1).cos(??2).cos(????) ).R
