@@ -47,7 +47,7 @@ public class PhysicalDevice extends Agent
 
 						send(DeviceHistory.class, n);
 
-						curtod += duration;
+						curtod = Util.asTimeOfDay(curtod + duration);
 					}
 				}
 				else
@@ -79,9 +79,9 @@ public class PhysicalDevice extends Agent
 	
 	static private String[] mTheFuture = 
 	{
-		//  DoW 	duration (sec)   activity  lat            lon
+	//  DoW 	duration (sec)  activity  lat          lon
 		"3,		0.333,			3,      45.55,      -122.800",		// at home
-		"3,		0.010, 			4,		45.55,		-122.800",		// get up
+ 		"3,		0.010, 			4,		45.55,		-122.800",		// get up
 		"3,		0.020,  	    2,      45.35,      -122.800",		// to coffee
 		"3,		0.010,	     	3,      45.35,      -122.800",		// at coffee
 		"3,		0.030,			0,      45.35,      -122.600",		// to work
@@ -97,5 +97,7 @@ public class PhysicalDevice extends Agent
 		"4,		0.333, 			3,      45.35,      -122.600",		// at work
 		"4,		0.040,			0,      45.55,      -122.800",		// to home
 		"4,		 -1.0,			0,      45.55,      -122.800",		// at home
+ 		/*		
+*/
 	};
 }

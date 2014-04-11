@@ -1,8 +1,6 @@
 package asim.agents;
 
 import asim.Framework;
-import asim.Message;
-import asim.ScoreKeeper;
 import asim.ScoringAgent;
 import asim.StateNode;
 
@@ -16,23 +14,24 @@ public class HasHappenedBefore extends ScoringAgent
 	}
 
 	@Override
-	protected void consume(Message msg)
+	public double score(StateNode node)
 	{
-		StateNode start = (StateNode) msg.mMessage;
 		int i = 3;
-		for (StateNode n = start.getPreceeding();
-				n != null;
+		for (StateNode n = node.getPreceeding();
+				(n != null) && (i > -3);
 				n = n.getPreceeding(), --i)
 		{
-			if(    (start.getActivity() == n.getActivity())
-			    || (start.getDayOfWeek() == n.getDayOfWeek())
-			    || closeTimeOfDay (start.getTimeOfDay(), n.getTimeOfDay())
-			    || closeDuration (start.getDuration(), n.getDuration()))
+			if(    (node.getActivity() == n.getActivity())
+			    || (node.getDayOfWeek() == n.getDayOfWeek())
+			    || closeTimeOfDay (node.getTimeOfDay(), n.getTimeOfDay())
+			    || closeDuration (node.getDuration(), n.getDuration()))
 			{
 				double delta = Math.exp((double) i);
-				send(ScoreKeeper.class, delta);
+				return delta;
 			}
 		}
+		
+		return 1.0;	// no opinion
 	}
 
 	/** are two durations (in ms) close, less than 5 minutes apart */
@@ -41,10 +40,11 @@ public class HasHappenedBefore extends ScoringAgent
 		return Math.abs(a - b) < (5L * 60L * 1000L);
 	}
 
-	/** are two time-of-days close, less than 1/2 hour apart */
+	/** are two times-of-day close, less than 1/2 hour apart */
 	private boolean closeTimeOfDay(double a, double b)
 	{
 		return Math.abs(a - b) < ((1.0 / 24.0) * 0.5);
 	}
+
 
 }

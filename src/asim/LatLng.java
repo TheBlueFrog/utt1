@@ -10,4 +10,10 @@ public class LatLng
 		mLat = lat;
 		mLon = lon;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("(%9.5f, %9.5f)", mLat, mLon);
+	}
 }

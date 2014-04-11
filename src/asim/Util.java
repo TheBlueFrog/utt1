@@ -36,7 +36,7 @@ public class Util
 	}
 
 	
-	static Map<Integer, Integer> mDaysSince2010 = new HashMap<Integer, Integer>();
+	static private Map<Integer, Integer> mDaysSince2010 = new HashMap<Integer, Integer>();
 	static 
 	{
 		mDaysSince2010.put(2010, 0);
@@ -46,6 +46,8 @@ public class Util
 		mDaysSince2010.put(2014, mDaysSince2010.get(2013) + 365);	
 		mDaysSince2010.put(2015, mDaysSince2010.get(2014) + 365);
 	}
+	
+	/** convert millisecond time to decimal time using our own zero of Jan 1 2010 */
 	static public double asDecimalTime (long t)
 	{
 		// want some kind of linear day and fractional day, e.g. 123.57 for day 123 early afternoon
@@ -69,7 +71,7 @@ public class Util
 	}
 	
 	/** 
-	 * @param day
+	 * @param day a decimal time
 	 * @return day-of-week (1..7) given a decimal day
 	 * 
 	 * we know day zero is Jan 1, 2010, that was a Friday, hence all (day % 7) 
@@ -81,6 +83,7 @@ public class Util
 		return (d + 2) % 7;	// shift right from Friday to Sunday
 	}
 	
+	/** convert millisecond duration to decimal duration */
 	static public double asDecimalDuration (long d)
 	{
 		// same units as above but this is for a duration not a timestamp
@@ -94,6 +97,15 @@ public class Util
 		return days + (((((double) hour) * (60.0 * 60.0)) + (((double) minute) * 60.0) + second) / (24.0 * 60.0 * 60.0));
 	}
 
+	/** ensure a computed decimal day is only the fractional
+	 * part, e.g. equivalent of integer %
+	 */
+	public static double asTimeOfDay(double d)
+	{
+		return d - Math.floor(d);
+	}
+	
+	/** convert decimal duration to millisecond duration */
 	static public long asMSDuration (double d)
 	{
 		double fraction = d - Math.floor(d);
@@ -118,6 +130,7 @@ public class Util
 			e.printStackTrace();
 		}
 	}
+
 	
 
 }

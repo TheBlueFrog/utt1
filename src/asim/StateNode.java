@@ -42,7 +42,7 @@ public class StateNode
 	@Override
 	public String toString()
 	{
-		return String.format("StateNode { %d, %9.5f, %d, %d }", mDayOfWeek, mTimeOfDay, mDuration, mActivity);
+		return String.format("StateNode { %d, %9.5f, %d, %d, %s }", mDayOfWeek, mTimeOfDay, mDuration, mActivity, mLocation.toString());
 	}
 	
 	public void setTag (Object t)
