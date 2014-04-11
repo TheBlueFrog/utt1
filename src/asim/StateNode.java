@@ -50,6 +50,23 @@ public class StateNode
 		mTag = t;
 	}
 	
+	public int getDayOfWeek()
+	{
+		return mDayOfWeek;
+	}
+	public double getTimeOfDay()
+	{
+		return mTimeOfDay;
+	}
+	public long getDuration()
+	{
+		return mDuration;
+	}
+	public int getActivity()
+	{
+		return mActivity;
+	}
+
 	/** 
 	 * @return node just before this one chronologically or null if this is the first node 
 	 */
@@ -71,20 +88,28 @@ public class StateNode
 		return mNodes.get(mIndex + 1);
 	}
 
-	public int getDayOfWeek()
+	public StateNode getClosest ()
 	{
-		return mDayOfWeek;
-	}
-	public double getTimeOfDay()
-	{
-		return mTimeOfDay;
-	}
-	public long getDuration()
-	{
-		return mDuration;
-	}
-	public int getActivity()
-	{
-		return mActivity;
+		double d = 0;
+		StateNode x = null;
+		for (StateNode n : mNodes)
+		{
+			if (x == null)
+			{
+				x = n;
+				d = 0;
+			}
+			else
+			{
+				double dd = Util.metersBetween(n.mLocation, x.mLocation);
+				if (dd < d)
+				{
+					x = n;
+					dd = d;
+				}
+			}
+		}
+		
+		return x;
 	}
 }
