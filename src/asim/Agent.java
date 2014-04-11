@@ -8,7 +8,7 @@ abstract public class Agent extends Thread
 {
 	private UUID mID;
 	private final BlockingQueue<Message> queue;
-	private Framework mFramework;
+	protected Framework mFramework;
 
 	public Agent(Framework f)
 	{
@@ -16,6 +16,8 @@ abstract public class Agent extends Thread
 		mID = UUID.randomUUID();
 
 		queue = new LinkedBlockingQueue<Message>();
+		
+		mFramework.register (this);
 	}
 
 	public String getID(boolean little)
@@ -30,6 +32,15 @@ abstract public class Agent extends Thread
 		return mID.toString();
 	}
 
+	protected boolean isQueueEmpty()
+	{
+		return queue.peek() == null;
+	}
+	protected Message takeFromQueue() throws InterruptedException
+	{
+		return queue.take();
+	}
+
 	@Override
 	public void run()
 	{
@@ -38,7 +49,7 @@ abstract public class Agent extends Thread
 			while (true)
 			{
 				Message m = queue.take();
-				Log.d(getID(true), String.format("Process from %s, %s", m.mSender.getID(true), m.mMessage));
+//				Log.d(getID(true), String.format("Process message from %s, %s", m.mSender.getID(true), m.mMessage));
 
 				consume(m);
 			}
@@ -61,6 +72,12 @@ abstract public class Agent extends Thread
 		mFramework.send(m);
 	}
 
-	abstract void consume(Message msg);
+	abstract protected void consume(Message msg);
+
+	protected void send(Class<? extends Agent> class1, Object msg)
+	{
+		mFramework.send(new Message(this, class1, msg));
+	}
+
 
 }
