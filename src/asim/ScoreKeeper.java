@@ -2,7 +2,7 @@ package asim;
 
 public class ScoreKeeper extends Agent
 {
-//	private static final String TAG = "myScoreListener";
+	private static final String TAG = ScoreKeeper.class.getSimpleName();
 
 	private static double mScore = 1.0;
 
@@ -17,9 +17,14 @@ public class ScoreKeeper extends Agent
 		double d = (Double) msg.mMessage;
 
 		mScore *= d;
-//		mScore = Math.max(0.0, Math.min(1.0, mScore));
 		
-		Log.d(getID(true), String.format("%s scored as %9.5f, global %9.5f", 
+		// we keep the overall score off zero because it can
+		// never become non-zero after that
+		// upper limit is arbitrary
+		
+		mScore = Math.min(10000.0, Math.max(0.1, mScore));	
+		
+		Log.d(TAG, String.format("%s scored as %9.5f, global %9.5f", 
 				msg.mSender.getID(true),
 				d, 
 				mScore));

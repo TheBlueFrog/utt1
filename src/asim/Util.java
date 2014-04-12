@@ -17,6 +17,13 @@ public class Util
 	public static final long OneDayms = (24L * OneHourms);
 	public static final long OneYearms = (365L * OneDayms);
 
+	public static final double OneDay = 1.0;
+	public static final double OneHour = (OneDay / 24.0);
+	public static final double OneMinute = (OneHour / 60.0);
+	public static final double OneSecond = (OneMinute / 60.0);
+	public static final double TenMinutes = (10.0 * OneMinute);
+	
+	
 	public static double metersBetween(LatLng a, LatLng b) 
 	{
 		return metersBetween(a.mLat, a.mLon, b.mLat, b.mLon);
@@ -109,6 +116,11 @@ public class Util
 		return d - Math.floor(d);
 	}
 	
+	public static double toStartOfDay(double d)
+	{
+		return Math.floor(d);
+	}
+	
 	/** convert decimal duration to millisecond duration */
 	static public long asMSDuration (double d)
 	{
@@ -133,6 +145,10 @@ public class Util
 		{
 			e.printStackTrace();
 		}
+	}
+	public static double daysBetween(double a, double b)
+	{
+		return Math.abs(toStartOfDay(a) - toStartOfDay(b));
 	}
 
 	
