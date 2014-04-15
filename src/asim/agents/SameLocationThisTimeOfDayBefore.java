@@ -6,6 +6,8 @@ import asim.ScoringAgent;
 import asim.StateNode;
 import asim.Util;
 
+/** farther back we have to go the lower the score */
+
 public class SameLocationThisTimeOfDayBefore extends ScoringAgent
 {
 	private static final String TAG = SameLocationThisTimeOfDayBefore.class.getSimpleName();
@@ -27,12 +29,12 @@ public class SameLocationThisTimeOfDayBefore extends ScoringAgent
 			n = n.nextThisTimeOfDay(true);
 			
 			if (n == null)
-				return 1.0;	// no more history, no opinion?
+				return 0.5;	// no more history, 
 			
-			if (Util.metersBetween(n.getLocation(), n.getLocation()) < 35.0)
+			if (Util.metersBetween(node.getLocation(), n.getLocation()) < Util.SameLocationThreshold)
 			{
 				// preserve direction of time
-				double howFar = n.getTime() - node.getTime();
+				double howFar = n.getTime() - (node.getTime() - Util.OneDay);
 				return Math.exp(howFar + K);
 			}
 		}

@@ -1,13 +1,34 @@
 package asim;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
+/**
+ * class that emulates a physical device, it produces an event stream for
+ * the rest of the system to consider
+ * 
+ * currently does not implement any commands to the device from the system...
+ * 
+ */
 public class PhysicalDevice extends Agent
 {
 	private static final String TAG = PhysicalDevice.class.getSimpleName();
-	
+
+	/** amount of time-of-day and duration jitter 
+	 * we introduce when building history.  0.0 disables it.
+	 */
+	public double mHistoryJitter = 0.0;
+	private Random mRandom;
+
+	private List<MutableStateNode> mFuture;
+
 	public PhysicalDevice(Framework f)
 	{
 		super(f);
+		
+		mRandom = new Random(71);
+		mFuture = setupFuture(DeviceHistory.mGlobalTime, 2);		
 	}
 
 	// we have a different run
@@ -16,7 +37,6 @@ public class PhysicalDevice extends Agent
 	{
 		int i = 0;
 		double curtod = 0.0;
-		boolean atEndOfDay = false;
 		
 		try
 		{
@@ -24,50 +44,23 @@ public class PhysicalDevice extends Agent
 			{
 				// we inject an event every couple of seconds until there is no more future
 				
-				if (isQueueEmpty())
+				if (isQueueEmpty() && mFuture.size() > 0)
 				{
 					sleep(2000);
-
-					// inject an event, ones we inject have to fit together with the
-					// DeviceHistory events because we use one 'clock' to set the
-					// time the event happened
 					
-					int dow = Util.getDayOfWeek(DeviceHistory.mGlobalTime);
+					StateNode n = new StateNode (mFuture.remove(0));
 					
-					String data = ((dow == 0) || (dow == 6)) 
-							? DeviceHistory.mPrototypeWeekendDay.get(i++) 
-							: DeviceHistory.mPrototypeWorkDay.get(i++);
-					
-					String[] v = data.split(",");
-					double duration = Double.parseDouble(v[0].trim());
-					if (duration < 0.0)
-					{
-						// fill out rest of day
-						duration = 1.0 - curtod;
-						i = 0;
-						atEndOfDay = true;
-					}
-
-					StateNode n = new StateNode(
-							DeviceHistory.mGlobalTime,
-							dow, 
-							curtod,
-							duration,
-							Integer.parseInt(v[1].trim()),
-							new LatLng (Double.parseDouble(v[2].trim()), Double.parseDouble(v[3].trim())));
-
 					Log.d(TAG, "Inject event " + n.toString());
 					
 					send(DeviceHistory.class, n);
 
-					curtod = Util.asTimeOfDay(curtod + duration);
-					DeviceHistory.mGlobalTime += duration;
+					curtod = Util.asTimeOfDay(curtod + n.getDuration());
+					DeviceHistory.mGlobalTime += n.getDuration();
 					
 					// rounding error
-					if (atEndOfDay)
+					if (Math.abs(n.getTimeOfDay() + n.getDuration() - 1.0) < Util.OneMinute)
 					{
 						DeviceHistory.mGlobalTime = Math.round(DeviceHistory.mGlobalTime);
-						atEndOfDay = false;
 					}
 				}
 				else
@@ -83,10 +76,6 @@ public class PhysicalDevice extends Agent
 		}
 	}
 
-	// some mechanism to read from the database of collected data
-	// and send it periodically
-	// timer maybe
-	
 	@Override
 	protected void consume(Message m)
 	{
@@ -98,27 +87,110 @@ public class PhysicalDevice extends Agent
 		Log.d(TAG, String.format("NYI - consume message from %s, %s", m.mSender.getID(true), m.mMessage));
 	}
 	
-	static private String[] mTheFuture = 
+	private List<MutableStateNode> setupFuture (double globalTime, int numDays)
 	{
-	//  duration (sec)  activity  lat          lon
-		"0.333,			3,      45.55,      -122.800",		// at home
- 		"0.010, 		4,		45.55,		-122.800",		// get up
-		"0.020,  	    2,      45.35,      -122.800",		// to coffee
-		"0.010,	     	3,      45.35,      -122.800",		// at coffee
-		"0.030,			0,      45.35,      -122.600",		// to work
-		"0.333, 		3,      45.35,      -122.600",		// at work
-		"0.040,			0,      45.55,      -122.800",		// to home
-		" -1.0,			0,      45.55,      -122.800",		// at home
+		List<MutableStateNode> nodes = new ArrayList<>();
+		for (int k = 0; k < numDays; ++k)
+		{
+			double curtod = 0.0;
+			boolean endOfDay = false;
+
+			List<String> data = getDay(Util.getDayOfWeek(globalTime));
+			for (String s : data)
+			{
+				String[] v = s.split(",");
+				int dow = Util.getDayOfWeek(globalTime);
+	
+				double duration = Double.parseDouble(v[0].trim());
+				if (duration < 0.0)
+				{
+					// fill out rest of day
+					duration = 1.0 - curtod;
+					endOfDay = true;
+				}
+	
+				MutableStateNode n = jitter(
+						nodes,
+						globalTime,
+						dow, 
+						curtod,
+						duration,
+						Integer.parseInt(v[1].trim()),
+						new LatLng (Double.parseDouble(v[2].trim()), Double.parseDouble(v[3].trim())));
+				
+				nodes.add(n);
+				
+				curtod = Util.asTimeOfDay(n.getTimeOfDay() + n.getDuration());
+				globalTime += n.getDuration();
+				if (endOfDay)
+				{
+					curtod = 0.0;
+					globalTime = Math.round(globalTime);
+				}
+			}
+		}
 		
-		"0.333,			3,      45.55,      -122.800",		// at home
- 		"0.010, 		4,		45.55,		-122.800",		// get up
-		"0.020,  	    2,      45.35,      -122.800",		// to coffee
-		"0.010,	     	3,      45.35,      -122.800",		// at coffee
-		"0.030,			0,      45.35,      -122.600",		// to work
-		"0.333, 		3,      45.35,      -122.600",		// at work
-		"0.040,			0,      45.55,      -122.800",		// to home
-		" -1.0,			0,      45.55,      -122.800",		// at home
-		/*		
-		 */
+		return nodes;
+	}
+	
+	private MutableStateNode jitter(List<MutableStateNode> v, double globalTime, int dow, double tod, double duration, int activity, LatLng latLng)
+	{
+		// don't jitter it out of the current day
+		
+		double jitter = (mHistoryJitter * duration * mRandom.nextDouble());
+		jitter -= jitter / 2.0;
+		duration += jitter;
+		
+		if ((tod + duration) > 1.0)
+			duration = 1.0 - tod;
+		
+		if (duration < Util.OneMinute)
+			duration += Util.OneMinute;
+
+		if ((tod + duration) > 1.0)
+			throw new IllegalStateException("got stuck jittering");
+		
+		MutableStateNode n = new MutableStateNode(
+				globalTime,
+				dow, 
+				tod,
+				duration,
+				activity,
+				latLng);
+		return n;
+	}
+	
+	
+	private List<String> getDay(int dow)
+	{		
+		if ((dow == 0) || (dow == 6))
+			return new ArrayList<String>(mWeekendDay);
+		else
+			return new ArrayList<String>(mWorkday);
+	}
+
+	static private List<String> mWorkday = new ArrayList<String>();
+	static 
+	{
+		//         duration (sec)  activity  lat         lon
+		mWorkday.add("0.333,		3,      45.55,      -122.800");		// at home
+		mWorkday.add("0.010, 		4,		45.55,		-122.800");		// get up
+		mWorkday.add("0.020, 	    2,      45.35,      -122.800");		// to coffee
+		mWorkday.add("0.010,     	3,      45.35,      -122.800");		// at coffee
+		mWorkday.add("0.030,		0,      45.35,      -122.600");		// to work
+		mWorkday.add("0.333,		3,      45.35,      -122.600");		// at work
+		mWorkday.add("0.040,		0,      45.55,      -122.800");		// to home
+		mWorkday.add(" -1.0,		0,      45.55,      -122.800");		// at home
+	};
+	static private List<String> mWeekendDay = new ArrayList<String>();
+	static 
+	{
+		//         duration (sec)  activity  lat         lon
+		mWeekendDay.add("0.400,		3,      45.55,      -122.800");		// at home
+		mWeekendDay.add("0.010, 	4,		45.55,		-122.800");		// get up
+		mWeekendDay.add("0.020,     2,      45.35,      -122.800");		// to coffee
+		mWeekendDay.add("0.040,    	3,      45.35,      -122.800");		// at coffee
+		mWeekendDay.add("0.020,		0,      45.55,      -122.800");		// to home
+		mWeekendDay.add(" -1.0,		0,      45.55,      -122.800");		// at home
 	};
 }

@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import asim.agents.ActivityHappenedThisTimeOfDayBefore;
+import asim.agents.ActivityHappenedThisTimeOfDayWeekAgo;
 import asim.agents.SameLocationThisTimeOfDayBefore;
+import asim.agents.SameLocationThisTimeOfDayWeekAgo;
 
 public class Main
 {
@@ -34,18 +36,23 @@ public class Main
 			e.printStackTrace();
 		}
 
+		// must create this AFTER DeviceHistory because the future starts
+		// at the end of history...
+		
 		mPhysicalDevice = new PhysicalDevice (mFramework);
 		mPhysicalDevice.start();
 	}
-
 	
-	// all the random agents that do the actual evaluation
+	// all the agents that do the actual evaluation
 	
 	private static List<Class<? extends Agent>> mAgents = new ArrayList<>();
 	static
 	{
 		mAgents.add(ActivityHappenedThisTimeOfDayBefore.class);
+		mAgents.add(ActivityHappenedThisTimeOfDayWeekAgo.class);
+		
 		mAgents.add(SameLocationThisTimeOfDayBefore.class);
+		mAgents.add(SameLocationThisTimeOfDayWeekAgo.class);
 	};
 	
 	private static void setupAgents() throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException

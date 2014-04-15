@@ -79,5 +79,9 @@ abstract public class Agent extends Thread
 		mFramework.send(new Message(this, class1, msg));
 	}
 
+	public String getTag()
+	{
+		return this.getClass().getSimpleName();
+	}
 
 }

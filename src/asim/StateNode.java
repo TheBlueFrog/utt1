@@ -3,85 +3,30 @@ package asim;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StateNode
+public class StateNode extends MutableStateNode
 {
 	private static List<StateNode> mNodes = new ArrayList<>();
 	
 	private int mIndex = -1;
 	
-	private double mTime;
-	private int mDayOfWeek;
-	private double mTimeOfDay;
-	private double mDuration;
-	private int mActivity;
-	private LatLng mLocation;
-
-	public Object mTag;
-	
-	public StateNode (double time, int dayOfWeek, double timeOfDay, double duration, int activity, LatLng loc)
+	private StateNode (double time, int dayOfWeek, double timeOfDay, double duration, int activity, LatLng loc)
 	{
-		if ((timeOfDay < 0) || (timeOfDay > 1.0))
-			throw new IllegalStateException("Event time-of-day < 0.0 or > 1.0");
-		
-		mTime = time;
-		mDayOfWeek = dayOfWeek;
-		mTimeOfDay = timeOfDay;
-		mDuration = duration;
-		mActivity = activity;
-		mLocation = loc;
-
-		mTag = null;		
+		super(time, dayOfWeek, timeOfDay, duration, activity, loc);
+	}
+	public StateNode (MutableStateNode n)
+	{
+		super(n.mTime, n.mDayOfWeek, n.mTimeOfDay, n.mDuration, n.mActivity, n.mLocation);
 	}
 	
 	static public void add (StateNode n)
 	{
 		if ((mNodes.size() > 0) && (n.mTime < mNodes.get(mNodes.size() - 1).mTime))
 			throw new IllegalStateException("Events must be added chronologically");
-		
+
 		n.mIndex = mNodes.size();
 		mNodes.add(n);
 	}
 
-	@Override
-	public String toString()
-	{
-		return String.format("StateNode { %9.5f, %d, %9.5f, %9.5f, %d, %s }", mTime, mDayOfWeek, mTimeOfDay, mDuration, mActivity, mLocation.toString());
-	}
-	
-	public void setTag (Object t)
-	{
-		mTag = t;
-	}
-	
-	public double getTime()
-	{
-		return mTime;
-	}
-	public int getDayOfWeek()
-	{
-		return mDayOfWeek;
-	}
-	public double getTimeOfDay()
-	{
-		return mTimeOfDay;
-	}
-	public double getDuration()
-	{
-		return mDuration;
-	}
-	public int getActivity()
-	{
-		return mActivity;
-	}
-	public double getEndTime()
-	{
-		return mTime + mDuration;
-	}
-	public LatLng getLocation()
-	{
-		return mLocation;
-	}
-	
 	/** 
 	 * @return node just before this one chronologically or null if there is nothing
 	 * in that direction
@@ -135,33 +80,6 @@ public class StateNode
 		return n;
 	}
 	
-	public StateNode shift (double t)
-	{
-		StateNode n = new StateNode(mTime + t, mDayOfWeek, mTimeOfDay, mDuration, mActivity, mLocation);
-		return n;
-	}
-	
-	/**
-	 * 
-	 * @param n
-	 * @return	true if the two time spans intersect, we shift one by
-	 * the number of days between them so that they overlay each other
-	 */
-	public boolean intersectsTimeOfDay(StateNode n)
-	{
-		double d = Util.daysBetween(n.getTime(), getTime());
-		StateNode shifted = n.shift (d);
-		
-		if (getEndTime() < shifted.getTime())
-			return false;	// we end before other starts
-		if (getTime() > shifted.getEndTime())
-			return false;	// we start after other ends
-		
-		double time = Math.max(getTime(), shifted.getTime());
-		double duration = Math.min(getEndTime(), shifted.getEndTime()) - time;
-		return duration > 0.0;
-	}
-
 	public StateNode getClosest ()
 	{
 		double d = 0;
@@ -185,6 +103,25 @@ public class StateNode
 		}
 		
 		return x;
+	}
+	
+	/** go back/forward by numDays not just one */
+	public StateNode nextThisTimeOfDay(boolean backInTime, int numDays)
+	{
+		StateNode n = this;
+		while (n != null)
+		{
+			for (int i = 0; i < numDays; ++i)
+			{
+				n = n.nextDay(backInTime);
+				if (n == null)
+					return null;
+			}
+
+			if (intersectsTimeOfDay(n))
+				return n;
+		}
+		return null;
 	}
 
 }

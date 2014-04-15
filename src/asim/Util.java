@@ -18,11 +18,18 @@ public class Util
 	public static final long OneYearms = (365L * OneDayms);
 
 	public static final double OneDay = 1.0;
+	public static final double OneWeek = (7.0 * OneDay);
 	public static final double OneHour = (OneDay / 24.0);
 	public static final double OneMinute = (OneHour / 60.0);
 	public static final double OneSecond = (OneMinute / 60.0);
 	public static final double TenMinutes = (10.0 * OneMinute);
-	
+
+	// if two locations are this far apart (in meters) we consider them to 
+	// be the same location, this is something like twice the average
+	// accuracy of GPSs, sorta, very empirical
+	public static final double SameLocationThreshold = 35.0;
+
+
 	
 	public static double metersBetween(LatLng a, LatLng b) 
 	{
@@ -150,6 +157,16 @@ public class Util
 	{
 		return Math.abs(toStartOfDay(a) - toStartOfDay(b));
 	}
+	
+	/** convert string of form "hh::mm" (24hr day) to decimal time-of-day */
+	public static double asTimeOfDay(String s)
+	{
+		String[]v1 = s.split(":");
+		int hour = Integer.parseInt(v1[0]);
+		int minutes = Integer.parseInt(v1[1]);
+		return (((double) hour) * OneHour) + (((double) minutes) * OneMinute);
+	}
+
 
 	
 

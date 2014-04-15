@@ -8,13 +8,13 @@ import asim.Util;
 
 /** farther back we have to go the lower the score */
 
-public class ActivityHappenedThisTimeOfDayBefore extends ScoringAgent
+public class SameLocationThisTimeOfDayWeekAgo extends ScoringAgent
 {
-	private static final String TAG = ActivityHappenedThisTimeOfDayBefore.class.getSimpleName();
+	private static final String TAG = SameLocationThisTimeOfDayWeekAgo.class.getSimpleName();
 	
 	private static final double K = 2.0;
 	
-	public ActivityHappenedThisTimeOfDayBefore(Framework f)
+	public SameLocationThisTimeOfDayWeekAgo(Framework f)
 	{
 		super(f);
 		Log.d(TAG, getID(true));
@@ -26,15 +26,15 @@ public class ActivityHappenedThisTimeOfDayBefore extends ScoringAgent
 		StateNode n = node;
 		while (true)
 		{
-			n = n.nextThisTimeOfDay(true);
+			n = n.nextThisTimeOfDay(true, 7);
 			
 			if (n == null)
 				return 0.5;	// no more history, 
 			
-			if (n.getActivity() == node.getActivity())
+			if (Util.metersBetween(node.getLocation(), n.getLocation()) < Util.SameLocationThreshold)
 			{
 				// preserve direction of time
-				double howFar = n.getTime() - (node.getTime() - Util.OneDay);
+				double howFar = n.getTime() - (node.getTime() - Util.OneWeek);
 				return Math.exp(howFar + K);
 			}
 		}

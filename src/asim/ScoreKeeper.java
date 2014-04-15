@@ -24,8 +24,8 @@ public class ScoreKeeper extends Agent
 		
 		mScore = Math.min(10000.0, Math.max(0.1, mScore));	
 		
-		Log.d(TAG, String.format("%s scored as %9.5f, global %9.5f", 
-				msg.mSender.getID(true),
+		Log.d(TAG, String.format("%40s scored as %9.5f, global %9.5f", 
+				msg.mSender.getTag(),
 				d, 
 				mScore));
 	}
