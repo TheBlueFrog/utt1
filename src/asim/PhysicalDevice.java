@@ -11,7 +11,7 @@ import java.util.Random;
  * currently does not implement any commands to the device from the system...
  * 
  */
-public class PhysicalDevice extends Agent
+public class PhysicalDevice extends Entity
 {
 	private static final String TAG = PhysicalDevice.class.getSimpleName();
 

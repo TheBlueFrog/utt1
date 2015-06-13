@@ -1,24 +1,31 @@
 package asim;
 
+import asim.agents.Environment;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-abstract public class Agent extends Thread
+public class Entity extends Thread
 {
 	private UUID mID;
 	private final BlockingQueue<Message> queue;
-	protected Framework mFramework;
+	protected Environment mEnvironment;
+    protected List<MutableStateNode> mState; // lower index, earlier in time
 
-	public Agent(Framework f)
+	public Entity(Environment e)
 	{
-		mFramework = f;
+		mEnvironment = e;
 		mID = UUID.randomUUID();
 
 		queue = new LinkedBlockingQueue<Message>();
-		
-		mFramework.register (this);
-	}
+		mEnvironment.register(this);
+
+        mState = new ArrayList<MutableStateNode>();
+        mState.add(new MutableStateNode(e.getTime()));
+    }
 
 	public String getID(boolean little)
 	{
@@ -69,14 +76,16 @@ abstract public class Agent extends Thread
 
 	protected void send(Message m)
 	{
-		mFramework.send(m);
+		mEnvironment.send(m);
 	}
 
-	abstract protected void consume(Message msg);
+	protected void consume(Message msg) {
+		Log.d(getTag(), String.format("drop message on floor", 0));
+	}
 
-	protected void send(Class<? extends Agent> class1, Object msg)
+	protected void send(Class<? extends Entity> class1, Object msg)
 	{
-		mFramework.send(new Message(this, class1, msg));
+		mEnvironment.send(new Message(this, class1, msg));
 	}
 
 	public String getTag()

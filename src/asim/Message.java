@@ -2,11 +2,11 @@ package asim;
 
 public class Message
 {
-	public Agent mSender = null;
-	public Class<? extends Agent> mRecipient = null;
+	public Entity mSender = null;
+	public Class<? extends Entity> mRecipient = null;
 	public Object mMessage;
 	
-//	public Message (Agent sender, Agent recipient, String msg)
+//	public Message (Entity sender, Entity recipient, String msg)
 //	{
 //		mSender = sender;
 //		mRecipient = recipient;
@@ -18,7 +18,7 @@ public class Message
 //		mMessage = msg;
 //	}
 
-	public Message(Agent sender, Class<? extends Agent> class1, Object msg)
+	public Message(Entity sender, Class<? extends Entity> class1, Object msg)
 	{
 		mSender = sender;
 		mRecipient = class1;

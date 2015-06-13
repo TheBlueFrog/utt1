@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class DeviceHistory extends Agent
+public class DeviceHistory extends Entity
 {
 	static public double mGlobalTime = 0;
 	
@@ -146,7 +146,7 @@ public class DeviceHistory extends Agent
 		
 		StateNode.add(n);
 		// don't actually save it to history
-		send(ScoringAgent.class, n);
+		send(ScoringEntity.class, n);
 	}
 
 	

@@ -1,18 +1,16 @@
 package asim;
 
 import asim.agents.Environment;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import asim.agents.Simulator;
 
 public class Main
 {
-	public static Framework mFramework;
-	private static Agent mPhysicalDevice;
+	public static Simulator mSimulator;
+	private static Entity mPhysicalDevice;
 	
 	public static void main(String[] args)
 	{
-		mFramework = new Framework(new Environment());
+		mSimulator = new Simulator();
 
 		mPhysicalDevice = new PhysicalDevice (mFramework);
 		mPhysicalDevice.start();
