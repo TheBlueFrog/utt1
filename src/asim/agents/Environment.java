@@ -1,11 +1,9 @@
 package asim.agents;
 
 import asim.Entity;
-import asim.Framework;
+import asim.Log;
 import asim.Message;
-import asim.MutableStateNode;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +13,32 @@ import java.util.List;
  */
 public class Environment {
 
-    static private Environment mEnvironment;
-    static private List<Entity> mEntities;
+    private static final long ONE_SECOND = 1;
+
+    static private List<Entity> mEntities = new ArrayList<Entity>();
     private final Simulator mSimulator;
 
+    public String getTag()
+    {
+        return this.getClass().getSimpleName();
+    }
+
     public Environment(Simulator simulator) {
+        Log.d(getTag(), String.format("Construct Environment"));
+
         mSimulator = simulator;
         setupEnvironment();
     }
 
+    static private long mCurrentTime = 0;
+
     public long getTime (){
-        return System.currentTimeMillis();
+        return mCurrentTime;
+    }
+
+    public long incTime()
+    {
+        return ++mCurrentTime;
     }
 
     private void setupEnvironment() {
@@ -41,7 +54,7 @@ public class Environment {
     }
     private void setupEntities() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         //for (Entity x : mEntities)
-        Entity e = new Entity(mEnvironment);
+        Entity e = new Entity(this);
         e.start();
     }
 
@@ -64,7 +77,11 @@ public class Environment {
             a.incoming(m);
     }
 
-
+    /**
+     *
+     * @param class1
+     * @return
+     */
     private List<Entity> getRecipients(Class<? extends Entity> class1)
     {
         List<Entity> v = new ArrayList<Entity>();
@@ -78,5 +95,30 @@ public class Environment {
         return v;
     }
 
+    /**
+     * run the environment to the given time
+     *
+     * simple, just look from now till then and go one
+     * time unit
+     *
+     * this could get a lot smarter
+     *
+     * @param time
+     */
+    public long runTo(long time) {
+        Log.d(getTag(), String.format("start runTo, now %d, stop at %d", getTime(), time));
+
+        while (getTime() <= (time - 1)) {
+            long t = getTime() + ONE_SECOND;
+            for (Entity e : mEntities) {
+                e.advance(t);
+            }
+
+            incTime();
+        }
+
+        Log.d(getTag(), String.format("end runTo, now %d", getTime()));
+        return getTime();
+    }
 }
 

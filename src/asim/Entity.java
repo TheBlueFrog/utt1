@@ -17,6 +17,8 @@ public class Entity extends Thread
 
 	public Entity(Environment e)
 	{
+        Log.d(getTag(), String.format("Construct Entity"));
+
 		mEnvironment = e;
 		mID = UUID.randomUUID();
 
@@ -51,12 +53,14 @@ public class Entity extends Thread
 	@Override
 	public void run()
 	{
+        Log.d(getTag(), String.format("Entity run starts"));
+
 		try
 		{
 			while (true)
 			{
 				Message m = queue.take();
-//				Log.d(getID(true), String.format("Process message from %s, %s", m.mSender.getID(true), m.mMessage));
+				Log.d(getID(true), String.format("Process message from %s, %s", m.mSender.getID(true), m.mMessage));
 
 				consume(m);
 			}
@@ -64,6 +68,7 @@ public class Entity extends Thread
 		catch (InterruptedException ex)
 		{
 		}
+        Log.d(getTag(), String.format("Entity run ends"));
 	}
 
 	public void incoming (Message msg)
@@ -93,4 +98,35 @@ public class Entity extends Thread
 		return this.getClass().getSimpleName();
 	}
 
+    private MutableStateNode moveToNewState(long newTime) {
+        MutableStateNode now = getCurrentState();
+
+        Log.d(getTag(), String.format("moveToNewState from %d to %d", now.getTime(), newTime));
+
+        MutableStateNode newState = new MutableStateNode(getCurrentState(), newTime);
+        return newState;
+    }
+    /**
+     * update the entity to the new time, return the amount of
+     * time we suggest before calling advance again
+     *
+     * @param newTime
+     * @return
+     */
+    public long advance(long newTime) {
+        long now = getCurrentState().getTime();
+
+        Log.d(getTag(), String.format("advance from state time %d to %d", getCurrentState().getTime(), newTime));
+
+        long delta = newTime - now;
+        MutableStateNode newState = moveToNewState(newTime);
+        mState.add(mState.size(), newState);
+
+        return newTime;
+    }
+
+    private MutableStateNode getCurrentState ()
+    {
+        return mState.get(mState.size() - 1);
+    }
 }

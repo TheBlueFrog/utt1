@@ -11,9 +11,7 @@ public class Main
 	public static void main(String[] args)
 	{
 		mSimulator = new Simulator();
-
-		mPhysicalDevice = new PhysicalDevice (mFramework);
-		mPhysicalDevice.start();
+		mSimulator.start();
 	}
 
 

@@ -13,9 +13,9 @@ public class MutableStateNode
         mTime = time;
 		mTag = null;
 	}
-	public MutableStateNode (MutableStateNode n)
+	public MutableStateNode (MutableStateNode n, long newTime)
 	{
-		this (n.mTime);
+		this (newTime);
 	}
 
 	@Override
